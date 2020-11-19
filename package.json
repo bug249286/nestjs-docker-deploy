@@ -1,0 +1,22 @@
+{
+  "name": "nestjs-deploy",
+  "version": "1.0.0",
+  "description": "Deploy App to server by SSH",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "https://github.com/bug249286",
+  "license": "ISC",
+  "dependencies": {
+    "abs": "^1.3.14",
+    "commander": "^6.2.0",
+    "node-ssh": "^11.1.1",
+    "rimraf": "^3.0.2"
+  },
+  "bin": {
+    "nest-deploy-one": "./project-one/start.js",
+    "nest-deploy-app": "./project-app/start.js"
+  },
+  "preferGlobal": true
+}

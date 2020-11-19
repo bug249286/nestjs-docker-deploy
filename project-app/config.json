@@ -1,0 +1,17 @@
+{
+  "appName":"nestjs-deploy",
+  "appBuild":"",
+  "port":"9999",
+  "branch":"master",
+  "volume":"",
+  "pathVerify":"",
+  "textVerify":"",
+  "nodeVersion":"node:12.18.1",
+  "server": {
+    "sudo":"",
+    "host": "0.0.0.0",
+    "username": "username",
+    "pem": "",
+    "deploymentDir": ""
+  }
+}

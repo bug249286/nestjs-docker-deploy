@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-deploy",
+  "name": "nest-docker-deploy",
   "version": "1.0.0",
   "description": "Deploy App to server by SSH",
   "main": "index.js",
@@ -16,7 +16,8 @@
   },
   "bin": {
     "nest-deploy-one": "./project-one/start.js",
-    "nest-deploy-app": "./project-app/start.js"
+    "nest-deploy-app": "./project-app/start.js",
+    "nuxt-deploy-app": "./project-nuxt/start.js"
   },
   "preferGlobal": true
 }

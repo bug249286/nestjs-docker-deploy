@@ -81,7 +81,7 @@ module.exports = {
     }
   },
   upToServer: async function (_config, ssh) {
-    console.log("Start upload Dockerfile && .env");
+    console.log(`Start upload ${_config.appName}.tar`);
     console.log("");
     try {
       let cwd_process = process.cwd();
@@ -90,34 +90,20 @@ module.exports = {
         `${_config.server.deploymentDir}/${_config.appName}/Dockerfile`
       );
       await ssh.putFile(
-        `${cwd_process}/dist.tar.gz`,
-        `${_config.server.deploymentDir}/${_config.appName}/dist.tar.gz`
-      );
-      await ssh.putFile(
-        `${cwd_process}/package.json`,
-        `${_config.server.deploymentDir}/${_config.appName}/test/package.json`
-      );
-      await ssh.putFile(
-        `${cwd_process}/package-lock.json`,
-        `${_config.server.deploymentDir}/${_config.appName}/test/package-lock.json`
-      );
-      await ssh.putFile(
         `${cwd_process}/.env`,
         `${_config.server.deploymentDir}/${_config.appName}/.env`
       );
-      console.log("Upload Dockerfile && .env Success");
+      await ssh.putFile(
+        `${cwd_process}/app.tar.gz`,
+        `${_config.server.deploymentDir}/${_config.appName}/app.tar.gz`
+      );
+      console.log(`Upload ${_config.appName}.tar Success`);
     } catch (err) {
-      console.log("Upload Dockerfile && .env Fail");
+      console.log(`Upload ${_config.appName}.tar Fail`);
       console.log(err);
       return false;
     }
     return true;
-  },
-  pull: async function (_config, ssh) {
-    console.log("Start git pull");
-    console.log("");
-    let cmd = `cd ${_config.server.deploymentDir}/${_config.appName}  && git pull origin ${_config.branch}`;
-    return await this.runCommand(cmd, ssh, "Start git pull");
   },
   buildImage: async function (_config, ssh) {
     console.log("Start Build Image");
@@ -133,6 +119,7 @@ module.exports = {
       network = _config.network;
     }
     let cmd = `${_config.server.sudo} docker rm -f ${_config.appName} || echo 'not' 1>&2 && ${_config.server.sudo} docker run --name ${_config.appName} ${network} -d ${_config.volume} ${_config.port} ${_config.appName}:latest`;
+    console.log('runApp',cmd);
     return await this.runCommand(cmd, ssh, "Start Run Container");
   },
   clean: async function (_config, ssh) {
@@ -173,13 +160,6 @@ module.exports = {
     return await this.runCommand(cmd, ssh, "deleteFiles");
   },
 
-  upzip: async function (_config, ssh) {
-    console.log("Start unzip");
-    console.log("");
-    let cmd = `cd ${_config.server.deploymentDir}/${_config.appName}  && rm -rf dist && tar -xf dist.tar.gz`;
-    return await this.runCommand(cmd, ssh, "upzip");
-  },
-
   backup: async function (_config, ssh) {
     console.log("Start create previous image");
     console.log("");
@@ -196,6 +176,13 @@ module.exports = {
       ssh,
       "Start create Backup to Previous image"
     );
+  },
+
+  upzip: async function (_config, ssh) {
+    console.log("Start unzip");
+    console.log("");
+    let cmd = `cd ${_config.server.deploymentDir}/${_config.appName}  && rm -rf app && tar -xf app.tar.gz`;
+    return await this.runCommand(cmd, ssh, "upzip");
   },
 
   rollback: async function (_config, ssh) {

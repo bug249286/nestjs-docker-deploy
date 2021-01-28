@@ -40,9 +40,10 @@ module.exports = {
       fs.writeFileSync("config.json", prettyJson);
       fs.writeFileSync(
         "Dockerfile",
-        `FROM ${config.nodeVersion}-alpine as production
+        `FROM ${prettyJson.nodeVersion}-alpine as production
 ENV NODE_ENV production
 WORKDIR /usr/src/app
+RUN apk update && apk upgrade
 COPY .env .
 COPY test/package.json .
 COPY test/package-lock.json .
@@ -54,7 +55,7 @@ CMD ["node", "dist/main"]
       );
       fs.writeFileSync(
         ".env",
-        ``
+        `TZ=Asia/Bangkok`
       );
       return true;
     } catch (err) {

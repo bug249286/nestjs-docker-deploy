@@ -1,4 +1,4 @@
-const nodessh = require("node-ssh");
+const {NodeSSH} = require("node-ssh");
 const path = require("path");
 
 module.exports = {
@@ -9,7 +9,7 @@ module.exports = {
   connect: async (_config) => {
     console.log("Start Connect to server");
     console.log("");
-    let session_ssh = new nodessh();
+    let session_ssh = new NodeSSH();
     let config = {
       host: _config.server.host,
       username: _config.server.username,
@@ -85,6 +85,7 @@ module.exports = {
     console.log("");
     try {
       let cwd_process = process.cwd();
+      console.log('cwd_process',cwd_process)
       await ssh.putFile(
         `${cwd_process}/DockerfileProduction`,
         `${_config.server.deploymentDir}/${_config.appName}/Dockerfile`
@@ -101,6 +102,12 @@ module.exports = {
         `${cwd_process}/package-lock.json`,
         `${_config.server.deploymentDir}/${_config.appName}/tmp/package-lock.json`
       );
+      try{
+        await ssh.putFile(
+          `${cwd_process}/i18n.tar.gz`,
+          `${_config.server.deploymentDir}/${_config.appName}/tmp/i18n.tar.gz`
+        );
+      }catch(e){}
       await ssh.putFile(
         `${cwd_process}/.env`,
         `${_config.server.deploymentDir}/${_config.appName}/.env`
@@ -123,13 +130,28 @@ module.exports = {
     console.log("Start Build Image");
     console.log("");
     let cmd = `cd ${_config.server.deploymentDir}/${_config.appName} && ${_config.server.sudo} docker build  -t ${_config.appName} .`;
+    console.log('buildImage',cmd)
     return await this.runCommand(cmd, ssh, "Start Build Image");
   },
   runApp: async function (_config, ssh) {
     console.log("Start Run Container");
     console.log("");
-    let cmd = `${_config.server.sudo} docker rm -f ${_config.appName} || echo 'not' 1>&2 && ${_config.server.sudo} docker run --name ${_config.appName} -d ${_config.volume} -p 127.0.0.1:${_config.port}:9999 ${_config.appName}:latest`;
+    let network = '';
+    if(typeof _config.network==='string' && _config.network){
+      network = _config.network;
+    }
+    let cmd = `${_config.server.sudo} docker rm -f ${_config.appName} || echo 'not' 1>&2 && ${_config.server.sudo} docker run --name ${_config.appName} ${network} -d ${_config.volume} ${_config.port} ${_config.appName}:latest`;
+    console.log('runApp-cmd',cmd)
     return await this.runCommand(cmd, ssh, "Start Run Container");
+  },
+  upzip: async function (_config, ssh) {
+    console.log("Start unzip");
+    console.log("");
+    let cmd = `cd ${_config.server.deploymentDir}/${_config.appName}/tmp  && rm -rf i18n && tar -xf i18n.tar.gz`;
+    try{
+      return await this.runCommand(cmd, ssh, "upzip");
+    }catch(e){}
+    return true;
   },
   clean: async function (_config, ssh) {
     console.log("Start Clean!!");
@@ -139,8 +161,7 @@ module.exports = {
   },
   isSuccess: async function (_config, ssh) {
     if (_config.textVerify) {
-      let cmd = `curl 127.0.0.1:${_config.port}`;
-      if (_config.pathVerify) cmd = `${cmd}/${_config.pathVerify}`;
+      if (_config.pathVerify) cmd = `curl ${_config.pathVerify}`;
       let result = await this.runCommand(cmd, ssh, "check");
       if (new RegExp(_config.textVerify, "g").test(result)) {
         return true;
@@ -166,7 +187,7 @@ module.exports = {
 
   deleteFiles: async function (_config, ssh) {
     console.log("Start Delete File");
-    let cmd = `rm -rf ${_config.server.deploymentDir}/${_config.appName}/tmp`;
+    let cmd = `rm -rf ${_config.server.deploymentDir}/${_config.appName}`;
     return await this.runCommand(cmd, ssh, "deleteFiles");
   },
 

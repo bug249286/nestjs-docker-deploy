@@ -40,6 +40,7 @@ program
       return false
     }
 
+    
     const result_upzip = await Remote.upzip(config_json, ssh)
     if (result_upzip === false) {
       ssh.dispose()
@@ -63,20 +64,14 @@ program
       ssh.dispose()
       return false
     }
-    /*
-    const result_clean_image = await Remote.clean(config_json, ssh)
-    if (result_clean_image === false) {
-      ssh.dispose()
-      return false
-    }
-    */
+   
 
     const result_removeFile = await Remote.deleteFiles(config_json, ssh)
     if (result_removeFile === false) {
       ssh.dispose()
       return false
     }
-    await Local.remove();
+    await Local.remove(config_json);
 
     console.log('------- ... LOADING ... -------')
     await Local.waiting(5000)

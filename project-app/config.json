@@ -1,16 +1,19 @@
 {
   "appName":"nestjs-deploy",
-  "appBuild":"",
-  "port":"9999",
+  "appBuild":"service-cdn",
+  "port":"-p 127.0.0.1:9999",
   "branch":"master",
   "volume":"",
-  "pathVerify":"",
+  "pathVerify":"127.0.0.1:9999",
   "textVerify":"",
   "nodeVersion":"node:12.18.1",
+  "network":"",
+  "i18n":false,
   "server": {
     "sudo":"",
-    "host": "0.0.0.0",
-    "username": "username",
+    "host": "",
+    "username": "",
+    "password": "",
     "pem": "",
     "deploymentDir": ""
   }

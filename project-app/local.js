@@ -12,6 +12,37 @@ module.exports = {
     }),
   runCommand: (cmd) =>
     new Promise((resolve, reject) => {
+
+      console.log('start-command - ',cmd);
+      /*
+      let output = null;
+      let _process = spawn(cmd,[],{
+          maxBuffer: 1024 * 200000,
+      });
+
+      _process.on("data", function(res) { 
+        console.log(res);
+      });
+
+      _process.stdout.on('data', (data) => {
+        output = data.toString();
+      });
+      _process.stderr.on('data', (data) => {
+        reject(data);
+      });
+
+      _process.on('close', (code) => {
+        if (code !== 0) {
+          console.log(`ps process exited with code ${code}`);
+          _process.stdin.end();
+          reject(code);
+        }else{
+          _process.stdin.end();
+          resolve(output);
+        }
+      });
+      */
+
       exec(
         cmd,
         {
@@ -49,6 +80,7 @@ COPY tmp/package.json .
 COPY tmp/package-lock.json .
 COPY tmp/main.js .
 COPY tmp/i18n ./i18n
+COPY tmp/template ./template
 RUN npm install --only=production
 EXPOSE 9999
 CMD ["node", "main"]   
@@ -73,6 +105,25 @@ COPY package.json .
 RUN npm install
 COPY . .
 RUN npm run build ${config.appBuild}`);
+/*
+fs.writeFileSync(
+        "DockerfileProduction",
+        `FROM ${config.nodeVersion}-alpine as production
+ENV NODE_ENV production
+WORKDIR /usr/src/app
+RUN apk update && apk upgrade
+COPY .env .
+COPY tmp/package.json .
+COPY tmp/package-lock.json .
+COPY tmp/main.js .
+COPY tmp/i18n ./i18n
+COPY tmp/template ./template
+RUN npm install --only=production
+EXPOSE 9999
+CMD ["node", "main"]   
+`);
+*/
+
     try {
 
       if(typeof config.i18n==='boolean' && config.i18n){
@@ -80,6 +131,12 @@ RUN npm run build ${config.appBuild}`);
         let commandi18n = `cd ../../apps/${config.appBuild}/src/ && tar -zcvf ${current_path.trim()}/i18n.tar.gz i18n`;
         await this.runCommand(commandi18n);
         console.log("commandi18n SUCCESS");
+      }
+      if(typeof config.template==='boolean' && config.template){
+        let current_path = await this.runCommand('pwd');
+        let commandTemplate = `cd ../../apps/${config.appBuild}/src/ && tar -zcvf ${current_path.trim()}/template.tar.gz template`;
+        await this.runCommand(commandTemplate);
+        console.log("commandTemplate SUCCESS");
       }
 
       let command1 = `cd ../../ && docker build -t ${config.appName}:build .`;
@@ -132,6 +189,9 @@ RUN npm run build ${config.appBuild}`);
     }
     if (fs.existsSync(`${cwd_process}/i18n.tar.gz`)) {
       await this.removeFolder(`${cwd_process}/i18n.tar.gz`);
+    }
+    if (fs.existsSync(`${cwd_process}/template.tar.gz`)) {
+      await this.removeFolder(`${cwd_process}/template.tar.gz`);
     }
     let command5 = `docker rmi $(docker images --filter "dangling=true" -q --no-trunc) || echo "OK"`;
     await this.runCommand(command5);

@@ -103,10 +103,18 @@ module.exports = {
         `${_config.server.deploymentDir}/${_config.appName}/tmp/package-lock.json`
       );
       try{
-        await ssh.putFile(
-          `${cwd_process}/i18n.tar.gz`,
-          `${_config.server.deploymentDir}/${_config.appName}/tmp/i18n.tar.gz`
-        );
+        if(typeof _config.i18n==='boolean' && _config.i18n){
+          await ssh.putFile(
+            `${cwd_process}/i18n.tar.gz`,
+            `${_config.server.deploymentDir}/${_config.appName}/tmp/i18n.tar.gz`
+          );
+        }
+        if(typeof _config.template==='boolean' && _config.template){
+          await ssh.putFile(
+            `${cwd_process}/template.tar.gz`,
+            `${_config.server.deploymentDir}/${_config.appName}/tmp/template.tar.gz`
+          );
+        }
       }catch(e){}
       await ssh.putFile(
         `${cwd_process}/.env`,
@@ -147,10 +155,20 @@ module.exports = {
   upzip: async function (_config, ssh) {
     console.log("Start unzip");
     console.log("");
-    let cmd = `cd ${_config.server.deploymentDir}/${_config.appName}/tmp  && rm -rf i18n && tar -xf i18n.tar.gz`;
-    try{
-      return await this.runCommand(cmd, ssh, "upzip");
-    }catch(e){}
+    if(typeof _config.i18n==='boolean' && _config.i18n){
+      let cmd = `cd ${_config.server.deploymentDir}/${_config.appName}/tmp  && rm -rf i18n && tar -xf i18n.tar.gz`;
+      try{
+        return await this.runCommand(cmd, ssh, "upzip");
+      }catch(e){}
+    }
+
+    if(typeof _config.template==='boolean' && _config.template){
+      let cmd2 = `cd ${_config.server.deploymentDir}/${_config.appName}/tmp  && rm -rf template && tar -xf template.tar.gz`;
+      try{
+        return await this.runCommand(cmd2, ssh, "upzip");
+      }catch(e){}
+    }
+    
     return true;
   },
   clean: async function (_config, ssh) {
